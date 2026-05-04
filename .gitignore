@@ -27,8 +27,13 @@ env/
 dist/
 build/
 
-# ── Jupyter ──────────────────────────────────────────────────
-.ipynb_checkpoints/
+# ── Marimo notebooks are .py files — COMMIT them!
+# Only ignore the runtime cache, never the notebook files
+__marimo__/
+
+# ── uv ──────────────────────────────────────────────────────
+.python-version
+# uv.lock should be committed for reproducibility
 
 # ── Secrets & environment ────────────────────────────────────
 .env

@@ -1,0 +1,42 @@
+[project]
+name = "clintrials"
+version = "0.1.0"
+description = "ClinTrials Research — AI-augmented biomedical research"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "marimo[recommended]>=0.23",
+    "pandas>=2.0",
+    "numpy>=1.26",
+    "scipy>=1.12",
+    "statsmodels>=0.14",
+    "matplotlib>=3.8",
+    "plotly>=5.20",
+    "altair>=5.4",
+    "seaborn>=0.13",
+    "biopython>=1.83",
+    "requests>=2.31",
+    "httpx>=0.27",
+    "qdrant-client>=1.9",
+    "py2neo>=2021.2",
+    "ollama>=0.3",
+    "python-dotenv>=1.0",
+    "rich>=13.7",
+    "loguru>=0.7",
+    "pydantic>=2.7",
+    "duckdb>=1.0",
+    "polars>=1.0",
+    "scikit-learn>=1.5",
+]
+
+[tool.marimo]
+# Marimo notebook settings
+[tool.marimo.runtime]
+auto_instantiate = true
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]

@@ -79,7 +79,7 @@ build_common() {
     agents/personas \
     agents/prompts \
     agents/conversations \
-    code/notebooks \
+    code/marimo \
     code/analysis \
     code/pipelines \
     code/utils \
@@ -125,8 +125,13 @@ env/
 dist/
 build/
 
-# ── Jupyter ──────────────────────────────────────────────────
-.ipynb_checkpoints/
+# ── Marimo notebooks are .py files — COMMIT them!
+# Only ignore the runtime cache, never the notebook files
+__marimo__/
+
+# ── uv ──────────────────────────────────────────────────────
+.python-version
+# uv.lock should be committed for reproducibility
 
 # ── Secrets & environment ────────────────────────────────────
 .env
@@ -221,17 +226,22 @@ to advance biomedical science.
 | \`literature/\` | Papers, books, notes & AI-generated summaries |
 | \`knowledge/\` | Knowledge graphs, ontologies & vector collections |
 | \`agents/\` | AI researcher personas, prompts & conversations |
-| \`code/\` | Notebooks, analysis scripts & data pipelines |
+| \`code/\` | Marimo notebooks (.py), analysis scripts & data pipelines |
 | \`experiments/\` | Active, completed & archived experiments |
 | \`reports/\` | Findings, visualizations & publications |
 
 ## Quick Start
 
 \`\`\`bash
-cp .env.example .env          # Add your API keys
-cat RESEARCH_PLAN.md          # Review current goals
-cat AGENT_ROSTER.md           # Meet your AI collaborators
-cat architecture/05_technology/MCP_ARCHITECTURE.md   # Set up tools
+cp .env.example .env                          # Add your API keys
+cat RESEARCH_PLAN.md                          # Review current goals
+cat AGENT_ROSTER.md                           # Meet your AI collaborators
+
+# Open a marimo notebook (installs sandbox deps automatically)
+uvx marimo edit --sandbox code/marimo/explore.py
+
+# Or run as a web app
+uvx marimo run code/marimo/explore.py
 \`\`\`
 
 ## Key Documents
@@ -1580,6 +1590,154 @@ docker run -d --name neo4j \
 - Qdrant in local file mode — no server process, no Docker, zero overhead
 - All npm MCP servers are already supported (Node.js 20 installed)
 INFRA
+
+  # ── pyproject.toml (uv project) ───────────────────────────────
+  write_file "$R/pyproject.toml"
+  cat > "$R/pyproject.toml" << PYPROJECT
+[project]
+name = "$(echo $REPO | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
+version = "0.1.0"
+description = "$TITLE — AI-augmented biomedical research"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "marimo[recommended]>=0.23",
+    "pandas>=2.0",
+    "numpy>=1.26",
+    "scipy>=1.12",
+    "statsmodels>=0.14",
+    "matplotlib>=3.8",
+    "plotly>=5.20",
+    "altair>=5.4",
+    "seaborn>=0.13",
+    "biopython>=1.83",
+    "requests>=2.31",
+    "httpx>=0.27",
+    "qdrant-client>=1.9",
+    "py2neo>=2021.2",
+    "ollama>=0.3",
+    "python-dotenv>=1.0",
+    "rich>=13.7",
+    "loguru>=0.7",
+    "pydantic>=2.7",
+    "duckdb>=1.0",
+    "polars>=1.0",
+    "scikit-learn>=1.5",
+]
+
+[tool.marimo]
+# Marimo notebook settings
+[tool.marimo.runtime]
+auto_instantiate = true
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+PYPROJECT
+
+  # ── .marimo.toml ────────────────────────────────────────────────
+  write_file "$R/.marimo.toml"
+  cat > "$R/.marimo.toml" << 'MARIMOCONFIG'
+[display]
+theme = "dark"
+cell_output = "below"
+
+[runtime]
+auto_instantiate = true
+pytests_enabled = true
+
+[save]
+autosave = "after_delay"
+autosave_delay = 1
+format_on_save = true
+
+[completion]
+coplilot = false
+activate_on_typing = true
+MARIMOCONFIG
+
+  # ── Starter marimo notebook ──────────────────────────────────────
+  write_file "$R/code/marimo/explore.py"
+  cat > "$R/code/marimo/explore.py" << NOTEBOOK
+import marimo
+
+__generated_with = "0.23.5"
+app = marimo.App(width="medium", title="$TITLE — Explorer")
+
+@app.cell
+def __(mo):
+    mo.md("""
+    # $TITLE — Research Explorer
+
+    **Notebook:** Interactive exploration environment
+    **Run:** \`uvx marimo edit --sandbox code/marimo/explore.py\`
+
+    > This is a [marimo](https://marimo.io) reactive notebook.
+    > Every cell is pure Python, tracked in git, and executes reactively.
+    """)
+    return
+
+@app.cell
+def __():
+    import marimo as mo
+    import os
+    from pathlib import Path
+    from dotenv import load_dotenv
+    load_dotenv(Path("../../.env") if Path("../../.env").exists() else Path(".env"))
+    return mo, os, Path, load_dotenv
+
+@app.cell
+def __(mo):
+    mo.md("## Environment Check")
+    return
+
+@app.cell
+def __(mo, os):
+    checks = {
+        "NCBI API Key": "set" if os.getenv("NCBI_API_KEY") else "not set",
+        "BioPortal API Key": "set" if os.getenv("BIOPORTAL_API_KEY") else "not set",
+        "Anthropic API Key": "set" if os.getenv("ANTHROPIC_API_KEY") else "not set",
+        "Ollama": "running" if __import__('subprocess').run(['ollama', 'list'], capture_output=True).returncode == 0 else "not running",
+    }
+    mo.table([
+        {"Service": k, "Status": v}
+        for k, v in checks.items()
+    ])
+    return checks,
+
+@app.cell
+def __(mo):
+    mo.md("## Quick BioMCP Search")
+    return
+
+@app.cell
+def __(mo):
+    query = mo.ui.text(placeholder="e.g. BRAF V600E", label="Search BioMCP")
+    query
+    return query,
+
+@app.cell
+def __(mo, query):
+    import subprocess, json
+    if query.value:
+        result = subprocess.run(
+            ["biomcp", "search", "article", "-q", query.value, "--limit", "5"],
+            capture_output=True, text=True
+        )
+        mo.md(result.stdout if result.returncode == 0 else f"Error: {result.stderr}")
+    else:
+        mo.md("*Enter a search term above to query BioMCP*")
+    return result, subprocess, json
+
+if __name__ == "__main__":
+    app.run()
+NOTEBOOK
+
+  # ── README.md update for marimo section ─────────────────────────
+  # (already created above — no change needed)
 
   log_done "Common scaffold complete: $REPO"
 }

@@ -18,17 +18,22 @@ to advance biomedical science.
 | `literature/` | Papers, books, notes & AI-generated summaries |
 | `knowledge/` | Knowledge graphs, ontologies & vector collections |
 | `agents/` | AI researcher personas, prompts & conversations |
-| `code/` | Notebooks, analysis scripts & data pipelines |
+| `code/` | Marimo notebooks (.py), analysis scripts & data pipelines |
 | `experiments/` | Active, completed & archived experiments |
 | `reports/` | Findings, visualizations & publications |
 
 ## Quick Start
 
 ```bash
-cp .env.example .env          # Add your API keys
-cat RESEARCH_PLAN.md          # Review current goals
-cat AGENT_ROSTER.md           # Meet your AI collaborators
-cat architecture/05_technology/MCP_ARCHITECTURE.md   # Set up tools
+cp .env.example .env                          # Add your API keys
+cat RESEARCH_PLAN.md                          # Review current goals
+cat AGENT_ROSTER.md                           # Meet your AI collaborators
+
+# Open a marimo notebook (installs sandbox deps automatically)
+uvx marimo edit --sandbox code/marimo/explore.py
+
+# Or run as a web app
+uvx marimo run code/marimo/explore.py
 ```
 
 ## Key Documents

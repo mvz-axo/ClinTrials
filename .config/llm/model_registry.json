@@ -1,51 +1,239 @@
 {
-  "_readme": "Available models and their recommended research use cases",
+  "_policy": "Anthropic Claude (primary reasoning via Zed) + open-weight models via Ollama. No closed proprietary models outside Anthropic.",
+  "_ollama_installed": true,
+  "_ollama_url": "http://localhost:11434",
 
-  "reasoning_models": {
+  "primary_reasoning": {
+
     "claude-sonnet-4-6": {
-      "provider": "zed.dev",
+      "provider": "zed.dev (Anthropic)",
       "context_window": 200000,
       "supports_extended_thinking": true,
-      "best_for": ["hypothesis generation", "literature synthesis", "complex analysis", "experimental design", "scientific writing"],
-      "zed_setting": {
-        "provider": "zed.dev",
-        "model": "claude-sonnet-4-6",
-        "effort": "high",
-        "enable_thinking": true
-      }
+      "weights": "closed — Anthropic exception allowed",
+      "best_for": ["deep hypothesis generation", "literature synthesis", "complex multi-step analysis", "experimental design", "scientific writing"],
+      "use_profile": "deep_reasoning.json",
+      "zed_setting": { "provider": "zed.dev", "model": "claude-sonnet-4-6", "effort": "high", "enable_thinking": true }
     },
+
     "claude-haiku": {
-      "provider": "zed.dev",
-      "best_for": ["quick lookups", "simple formatting", "batch summarization"],
-      "zed_setting": {
-        "provider": "zed.dev",
-        "model": "claude-haiku",
-        "effort": "low",
-        "enable_thinking": false
-      }
+      "provider": "zed.dev (Anthropic)",
+      "weights": "closed — Anthropic exception allowed",
+      "best_for": ["quick lookups", "simple formatting", "rapid iteration"],
+      "zed_setting": { "provider": "zed.dev", "model": "claude-haiku", "effort": "low", "enable_thinking": false }
     }
+
+  },
+
+  "open_general": {
+    "_note": "All run locally via Ollama. No API key required. Pull with: ollama pull <model>",
+
+    "qwen2.5:14b": {
+      "developer": "Alibaba Cloud",
+      "license": "Apache 2.0",
+      "params": "14B",
+      "context": "128K",
+      "ollama_pull": "ollama pull qwen2.5:14b",
+      "size_on_disk": "~9GB",
+      "best_for": ["literature analysis", "structured data", "multilingual research", "JSON output", "biomedical QA"],
+      "notes": "Strong science and medical reasoning. Good balance of capability vs size for local use."
+    },
+
+    "qwen2.5:32b": {
+      "developer": "Alibaba Cloud",
+      "license": "Apache 2.0",
+      "params": "32B",
+      "context": "128K",
+      "ollama_pull": "ollama pull qwen2.5:32b",
+      "size_on_disk": "~20GB",
+      "best_for": ["complex reasoning", "long document analysis", "agent tasks"],
+      "notes": "Best Qwen size for serious research tasks if you have the RAM."
+    },
+
+    "qwen2.5:72b": {
+      "developer": "Alibaba Cloud",
+      "license": "Qwen License (open, non-commercial restriction on 72B)",
+      "params": "72B",
+      "context": "128K",
+      "ollama_pull": "ollama pull qwen2.5:72b",
+      "size_on_disk": "~47GB",
+      "best_for": ["highest quality local reasoning", "frontier-level biomedical analysis"],
+      "notes": "Requires substantial RAM. Check Qwen License for 72B non-commercial use."
+    },
+
+    "glm4:9b": {
+      "developer": "Zhipu AI (Tsinghua University)",
+      "license": "Apache 2.0",
+      "params": "9B",
+      "context": "128K",
+      "ollama_pull": "ollama pull glm4",
+      "size_on_disk": "~6GB",
+      "best_for": ["multilingual biomedical text", "Chinese-language literature", "mixed-language research"],
+      "notes": "Architecturally bilingual (Chinese+English). Excellent for international research literature."
+    },
+
+    "kimi-k2.5": {
+      "developer": "Moonshot AI",
+      "license": "Open weights",
+      "ollama_pull": "ollama pull kimi-k2.5",
+      "best_for": ["long context reasoning", "document analysis"],
+      "notes": "Available in Ollama library. Strong long-context performance."
+    },
+
+    "phi4:14b": {
+      "developer": "Microsoft",
+      "license": "MIT",
+      "params": "14B",
+      "ollama_pull": "ollama pull phi4",
+      "size_on_disk": "~9GB",
+      "best_for": ["reasoning", "STEM tasks", "fast local inference"],
+      "notes": "Strong on reasoning benchmarks. MIT license — very permissive."
+    },
+
+    "deepseek-v3": {
+      "developer": "DeepSeek AI",
+      "license": "MIT",
+      "ollama_pull": "ollama pull deepseek-v3",
+      "best_for": ["complex reasoning", "code", "scientific analysis"],
+      "notes": "MoE architecture — very capable. MIT licensed."
+    }
+
+  },
+
+  "open_medical": {
+    "_note": "Biomedical and clinical domain fine-tuned open-weight models",
+
+    "meditron:70b": {
+      "developer": "EPFL",
+      "license": "Llama 2 Community License",
+      "params": "70B",
+      "base_model": "Llama 2",
+      "ollama_pull": "ollama pull meditron:70b",
+      "size_on_disk": "~39GB",
+      "training_data": "PubMed Central, medical guidelines",
+      "benchmarks": "Outperforms GPT-3.5 on MedQA, within 5% of GPT-4",
+      "best_for": ["medical QA", "clinical guidelines", "differential diagnosis", "evidence-based reasoning"],
+      "notes": "Gold standard open medical LLM. Requires substantial RAM for 70B."
+    },
+
+    "meditron:7b": {
+      "developer": "EPFL",
+      "license": "Llama 2 Community License",
+      "params": "7B",
+      "ollama_pull": "ollama pull meditron:7b",
+      "size_on_disk": "~3.8GB",
+      "best_for": ["fast medical QA", "low-resource environments", "batch processing"],
+      "notes": "Smaller, faster. Good for rapid literature screening."
+    },
+
+    "llama3-meditron:70b": {
+      "developer": "EPFL (updated)",
+      "license": "Llama 3 Community License",
+      "params": "70B",
+      "base_model": "Llama 3.1",
+      "huggingface": "epfl-llm/meditron-llama3-70b",
+      "ollama_pull": "Import from HuggingFace (see HF import docs)",
+      "training_data": "PubMed Central, textbooks, clinical practice guidelines",
+      "benchmarks": "Outperforms all Llama 3.1 models on MedMCQA/MedQA/PubMedQA",
+      "best_for": ["state-of-the-art open medical reasoning", "physician-level QA"],
+      "notes": "Best open medical model available. Co-designed with physicians. Import via HF."
+    },
+
+    "medgemma:4b": {
+      "developer": "Google",
+      "license": "Health AI Developer Foundations License (open weights, research use)",
+      "params": "4B",
+      "base_model": "Gemma 3",
+      "huggingface": "google/medgemma-4b-it",
+      "multimodal": true,
+      "modalities": ["text", "medical images", "radiology", "histopathology", "ophthalmology"],
+      "ollama_pull": "ollama pull medgemma  (or import from HuggingFace)",
+      "hf_access": "Gated — accept license at huggingface.co/google/medgemma-4b-it",
+      "best_for": ["medical image analysis", "radiology report generation", "histopathology", "multimodal biomedical tasks"],
+      "notes": "Unique multimodal capability — can analyse medical images. HUGGINGFACE_TOKEN required."
+    },
+
+    "medgemma:27b": {
+      "developer": "Google",
+      "license": "Health AI Developer Foundations License",
+      "params": "27B",
+      "modalities": ["text"],
+      "huggingface": "google/medgemma-27b-text-it",
+      "hf_access": "Gated — accept license at HuggingFace",
+      "best_for": ["deep medical text reasoning", "clinical document understanding", "EHR interpretation"],
+      "notes": "Text-only. Best performance for medical text tasks among the MedGemma family."
+    },
+
+    "biomistral:7b": {
+      "developer": "LIA / Nantes University (ACL 2024)",
+      "license": "Apache 2.0",
+      "params": "7B",
+      "base_model": "Mistral 7B",
+      "huggingface": "BioMistral/BioMistral-7B",
+      "training_data": "PubMed Central full text",
+      "ollama_pull": "Import from HuggingFace",
+      "best_for": ["biomedical literature QA", "multilingual medical text", "PubMed-grounded reasoning"],
+      "notes": "Pre-trained on PubMed Central. Evaluated on 10 medical QA benchmarks."
+    },
+
+    "mediphi-clinical": {
+      "developer": "Microsoft",
+      "license": "MIT",
+      "base_model": "Phi-3.5-mini-instruct",
+      "huggingface": "microsoft/MediPhi-Clinical",
+      "training_data": "Clinical notes, PMC-Patients, NoteChat",
+      "best_for": ["clinical note understanding", "EHR extraction", "lightweight clinical reasoning"],
+      "notes": "MIT licensed. Very small footprint. Good for structured data extraction from clinical text."
+    }
+
   },
 
   "embedding_models": {
+    "_note": "All open-weight. Run locally via Ollama or sentence-transformers. No API key required.",
+
+    "nomic-embed-text": {
+      "provider": "Ollama (Nomic AI)",
+      "license": "Apache 2.0",
+      "dimensions": 768,
+      "ollama_pull": "ollama pull nomic-embed-text",
+      "context": "8192 tokens",
+      "best_for": ["general literature search", "production RAG", "long documents"],
+      "notes": "Excellent quality, long context window, fast. Recommended default."
+    },
+
+    "mxbai-embed-large": {
+      "provider": "Ollama (mixedbread.ai)",
+      "license": "Apache 2.0",
+      "dimensions": 1024,
+      "ollama_pull": "ollama pull mxbai-embed-large",
+      "best_for": ["highest quality semantic search", "scientific literature"],
+      "notes": "State-of-the-art on MTEB benchmark. Best quality among free local models."
+    },
+
+    "bge-m3": {
+      "provider": "Ollama (BAAI)",
+      "license": "MIT",
+      "dimensions": 1024,
+      "ollama_pull": "ollama pull bge-m3",
+      "best_for": ["multilingual biomedical search", "cross-lingual literature"],
+      "notes": "Multi-lingual, multi-granularity. Excellent for international literature."
+    },
+
+    "qwen3-embedding": {
+      "provider": "Ollama (Alibaba)",
+      "license": "Apache 2.0",
+      "ollama_pull": "ollama pull qwen3-embedding",
+      "best_for": ["multilingual scientific text", "long biomedical documents"],
+      "notes": "New Qwen3 embedding — strong multilingual scientific performance."
+    },
+
     "all-MiniLM-L6-v2": {
-      "provider": "sentence-transformers (local — no API key)",
+      "provider": "sentence-transformers / Qdrant fastembed (local)",
+      "license": "Apache 2.0",
       "dimensions": 384,
-      "install": "pip install sentence-transformers",
-      "best_for": ["offline use", "Qdrant fastembed", "development"],
-      "qdrant_provider": "fastembed"
-    },
-    "text-embedding-3-large": {
-      "provider": "openai",
-      "dimensions": 3072,
-      "install": "pip install openai",
-      "best_for": ["production literature search", "highest quality semantic retrieval"],
-      "cost": "~$0.13 per 1M tokens"
-    },
-    "text-embedding-3-small": {
-      "provider": "openai",
-      "dimensions": 1536,
-      "best_for": ["code embeddings", "cost-efficient production"],
-      "cost": "~$0.02 per 1M tokens"
+      "install": "Built into mcp-server-qdrant via fastembed — no separate install needed",
+      "best_for": ["development", "fast iteration", "Qdrant default"],
+      "notes": "Fastest to get started. Lower quality than nomic/mxbai but zero friction."
     }
+
   }
 }

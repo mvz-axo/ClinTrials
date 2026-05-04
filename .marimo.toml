@@ -1,0 +1,16 @@
+[display]
+theme = "dark"
+cell_output = "below"
+
+[runtime]
+auto_instantiate = true
+pytests_enabled = true
+
+[save]
+autosave = "after_delay"
+autosave_delay = 1
+format_on_save = true
+
+[completion]
+coplilot = false
+activate_on_typing = true
