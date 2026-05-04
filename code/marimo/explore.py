@@ -1,10 +1,18 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "marimo>=0.23.5",
+# ]
+# ///
+
 import marimo
 
 __generated_with = "0.23.5"
-app = marimo.App(width="medium", title="ClinTrials Research — Explorer")
+app = marimo.App(width="medium")
+
 
 @app.cell
-def __(mo):
+def _(mo):
     mo.md("""
     # ClinTrials Research — Research Explorer
 
@@ -16,22 +24,27 @@ def __(mo):
     """)
     return
 
+
 @app.cell
-def __():
+def _():
     import marimo as mo
     import os
     from pathlib import Path
     from dotenv import load_dotenv
     load_dotenv(Path("../../.env") if Path("../../.env").exists() else Path(".env"))
-    return mo, os, Path, load_dotenv
+    return mo, os
+
 
 @app.cell
-def __(mo):
-    mo.md("## Environment Check")
+def _(mo):
+    mo.md("""
+    ## Environment Check
+    """)
     return
 
+
 @app.cell
-def __(mo, os):
+def _(mo, os):
     checks = {
         "NCBI API Key": "set" if os.getenv("NCBI_API_KEY") else "not set",
         "BioPortal API Key": "set" if os.getenv("BIOPORTAL_API_KEY") else "not set",
@@ -42,21 +55,26 @@ def __(mo, os):
         {"Service": k, "Status": v}
         for k, v in checks.items()
     ])
-    return checks,
-
-@app.cell
-def __(mo):
-    mo.md("## Quick BioMCP Search")
     return
 
-@app.cell
-def __(mo):
-    query = mo.ui.text(placeholder="e.g. BRAF V600E", label="Search BioMCP")
-    query
-    return query,
 
 @app.cell
-def __(mo, query):
+def _(mo):
+    mo.md("""
+    ## Quick BioMCP Search
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    query = mo.ui.text(placeholder="e.g. BRAF V600E", label="Search BioMCP")
+    query
+    return (query,)
+
+
+@app.cell
+def _(mo, query):
     import subprocess, json
     if query.value:
         result = subprocess.run(
@@ -66,7 +84,8 @@ def __(mo, query):
         mo.md(result.stdout if result.returncode == 0 else f"Error: {result.stderr}")
     else:
         mo.md("*Enter a search term above to query BioMCP*")
-    return result, subprocess, json
+    return
+
 
 if __name__ == "__main__":
     app.run()
