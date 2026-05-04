@@ -14,7 +14,7 @@
 | Node.js | Node.js + npm | 20.19.4 / 9.2.0 | ✅ Installed |
 | Vector DB | Qdrant (local file mode) | — | 🔲 Configure |
 | Graph DB | Neo4j | — | 🔲 To install |
-| Biomedical MCP | BioMCP | — | 🔲 To install |
+| Biomedical MCP | BioMCP | 0.8.22 | ✅ Installed |
 
 ## LLM Policy
 

@@ -41,6 +41,24 @@
 3. Restart Zed
 4. The server's tools appear in the Agent panel tool list
 
+## Current Activation Status (as of scaffold date)
+
+| Server | Installed | Active in Zed |
+|---|---|---|
+| BioMCP | ✅ | ✅ |
+| PubMed MCP | ✅ | ✅ |
+| UniProt MCP | ✅ | ✅ |
+| ChEMBL MCP | ✅ | ✅ |
+| NCBI Datasets MCP | ✅ | ✅ |
+| BioThings MCP | ✅ | ✅ |
+| BioOntology MCP | ✅ | ⚠️ needs BIOPORTAL_API_KEY |
+| Qdrant MCP | ✅ | ✅ |
+| Neo4j MCP | ✅ | ⚠️ needs Neo4j DB running |
+| Memory MCP | ✅ | ✅ |
+| Filesystem MCP | ✅ | ✅ |
+| GitHub MCP | ✅ | ✅ |
+| Sequential Thinking | ✅ | ✅ |
+
 ## Adding API Keys
 
 1. Copy `.env.example` to `.env`
