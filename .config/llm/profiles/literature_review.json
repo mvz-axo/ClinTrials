@@ -1,0 +1,15 @@
+{
+  "profile": "literature_review",
+  "description": "Systematic search, summary and synthesis of research literature",
+  "use_when": [
+    "Mapping a new research topic",
+    "Comparing findings across multiple studies",
+    "Identifying research gaps and open questions",
+    "Building annotated bibliographies"
+  ],
+  "model": "claude-sonnet-4-6",
+  "settings": { "effort": "medium", "enable_thinking": false },
+  "mcp_recommended": ["biomcp", "pubmed", "memory"],
+  "output_structure": "Background | Key Findings | Contradictions | Gaps | Recommended Reading",
+  "system_prompt_prefix": "You are a systematic literature reviewer. Prioritise recent, high-quality evidence (prefer RCTs and meta-analyses). Flag contradictory findings and note limitations of each study. Summarise in the structure: Background → Key Findings → Contradictions & Debates → Open Questions → Top 5 Papers to Read. Always note the date range of evidence covered."
+}

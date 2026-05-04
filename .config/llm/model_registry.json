@@ -1,0 +1,51 @@
+{
+  "_readme": "Available models and their recommended research use cases",
+
+  "reasoning_models": {
+    "claude-sonnet-4-6": {
+      "provider": "zed.dev",
+      "context_window": 200000,
+      "supports_extended_thinking": true,
+      "best_for": ["hypothesis generation", "literature synthesis", "complex analysis", "experimental design", "scientific writing"],
+      "zed_setting": {
+        "provider": "zed.dev",
+        "model": "claude-sonnet-4-6",
+        "effort": "high",
+        "enable_thinking": true
+      }
+    },
+    "claude-haiku": {
+      "provider": "zed.dev",
+      "best_for": ["quick lookups", "simple formatting", "batch summarization"],
+      "zed_setting": {
+        "provider": "zed.dev",
+        "model": "claude-haiku",
+        "effort": "low",
+        "enable_thinking": false
+      }
+    }
+  },
+
+  "embedding_models": {
+    "all-MiniLM-L6-v2": {
+      "provider": "sentence-transformers (local — no API key)",
+      "dimensions": 384,
+      "install": "pip install sentence-transformers",
+      "best_for": ["offline use", "Qdrant fastembed", "development"],
+      "qdrant_provider": "fastembed"
+    },
+    "text-embedding-3-large": {
+      "provider": "openai",
+      "dimensions": 3072,
+      "install": "pip install openai",
+      "best_for": ["production literature search", "highest quality semantic retrieval"],
+      "cost": "~$0.13 per 1M tokens"
+    },
+    "text-embedding-3-small": {
+      "provider": "openai",
+      "dimensions": 1536,
+      "best_for": ["code embeddings", "cost-efficient production"],
+      "cost": "~$0.02 per 1M tokens"
+    }
+  }
+}

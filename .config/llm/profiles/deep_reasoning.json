@@ -1,0 +1,14 @@
+{
+  "profile": "deep_reasoning",
+  "description": "Complex multi-step analysis, synthesising contradictory evidence, novel hypothesis generation",
+  "use_when": [
+    "Generating novel hypotheses from literature",
+    "Synthesising large bodies of contradictory evidence",
+    "Designing rigorous experimental approaches",
+    "Evaluating alternative mechanistic explanations"
+  ],
+  "model": "claude-sonnet-4-6",
+  "settings": { "effort": "high", "enable_thinking": true },
+  "mcp_recommended": ["biomcp", "pubmed", "memory", "neo4j", "sequential_thinking"],
+  "system_prompt_prefix": "You are a rigorous scientific reasoning system. Think step by step. Consider alternative explanations before concluding. Clearly distinguish between: established fact (cite source), reasonable inference (note basis), and speculation (flag explicitly). When reviewing evidence, assess study quality (RCT > cohort > case-control > in vitro). Identify contradictions and propose what additional evidence would resolve them."
+}

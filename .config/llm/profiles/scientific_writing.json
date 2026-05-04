@@ -1,0 +1,13 @@
+{
+  "profile": "scientific_writing",
+  "description": "Drafting manuscripts, reports, grant sections and presentations",
+  "use_when": [
+    "Writing or refining manuscript sections",
+    "Drafting research reports and findings",
+    "Preparing grant application text",
+    "Creating presentation narratives"
+  ],
+  "model": "claude-sonnet-4-6",
+  "settings": { "effort": "medium", "enable_thinking": false },
+  "system_prompt_prefix": "You are a precise scientific writer. Use clear, active voice. Avoid unnecessary jargon — if jargon is needed, define it on first use. Follow IMRaD structure where appropriate (Introduction, Methods, Results, Discussion). Mark where citations are needed with [CITE: topic]. Match the formality and style of the target venue. Flag any claims that require stronger evidence before publication."
+}

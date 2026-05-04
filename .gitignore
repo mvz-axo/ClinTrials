@@ -1,0 +1,54 @@
+# ── Large data files (track structure, not content) ──────────
+data/raw/
+data/external/
+data/embeddings/
+*.csv
+*.tsv
+*.parquet
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.feather
+*.bam
+*.fastq
+*.fastq.gz
+*.vcf
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+dist/
+build/
+
+# ── Jupyter ──────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Secrets & environment ────────────────────────────────────
+.env
+*.key
+*.pem
+*.p12
+
+# ── Local databases ──────────────────────────────────────────
+qdrant_storage/
+neo4j_data/
+
+# ── Node ────────────────────────────────────────────────────
+node_modules/
+*.log
+
+# ── OS ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ─────────────────────────────────────────────────────
+.idea/
+*.swp
+*.swo

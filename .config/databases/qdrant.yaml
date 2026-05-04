@@ -1,0 +1,33 @@
+# Qdrant Vector Database — ClinTrials Research
+# Docs: https://qdrant.tech/documentation/
+#
+# Option A: Fully local (no Docker) — set mode: local
+# Option B: Docker — docker run -p 6333:6333 qdrant/qdrant
+
+mode: local
+local_path: ~/.local/share/qdrant/ClinTrials
+url: http://localhost:6333      # Used when mode: remote
+
+collections:
+  literature:
+    description: Embedded research papers, book chapters and review articles
+    vector_size: 384            # all-MiniLM-L6-v2  |  use 3072 for text-embedding-3-large
+    distance: Cosine
+    chunking: section-aware
+    chunk_size: 512
+    chunk_overlap: 50
+
+  knowledge_nodes:
+    description: Embedded summaries of knowledge graph nodes for semantic retrieval
+    vector_size: 384
+    distance: Cosine
+
+  agent_conversations:
+    description: Embedded agent conversation logs for cross-session recall
+    vector_size: 384
+    distance: Cosine
+
+  experiment_logs:
+    description: Embedded experimental protocols and results
+    vector_size: 384
+    distance: Cosine

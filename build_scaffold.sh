@@ -13,8 +13,20 @@
 
 set -euo pipefail
 
+# CLONES_DIR = the directory containing ClinTrials, mAb and FlourTag
+# Works whether the script lives at Clones/build_scaffold.sh
+# or at Clones/ClinTrials/build_scaffold.sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLONES_DIR="$(dirname "$SCRIPT_DIR")"
+if [[ -d "$SCRIPT_DIR/ClinTrials" && -d "$SCRIPT_DIR/mAb" ]]; then
+  CLONES_DIR="$SCRIPT_DIR"
+elif [[ -d "$(dirname "$SCRIPT_DIR")/ClinTrials" && -d "$(dirname "$SCRIPT_DIR")/mAb" ]]; then
+  CLONES_DIR="$(dirname "$SCRIPT_DIR")"
+else
+  echo "❌  Cannot locate research repositories."
+  echo "    Run this script from your Clones folder:"
+  echo "    cd ~/Clones && bash build_scaffold.sh"
+  exit 1
+fi
 
 # ── Colours ────────────────────────────────────────────────────
 GRN='\033[0;32m'; BLU='\033[0;34m'; YLW='\033[1;33m'; CYN='\033[0;36m'; NC='\033[0m'

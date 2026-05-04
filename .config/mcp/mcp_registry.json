@@ -1,0 +1,173 @@
+{
+  "_readme": "Master MCP server registry. Set enabled:true and install each server before activating. Install instructions in each server's config file.",
+  "_zed_note": "To activate in Zed: add to ~/.config/zed/settings.json under context_servers. See architecture/05_technology/MCP_ARCHITECTURE.md",
+
+  "biomedical": {
+
+    "biomcp": {
+      "enabled": true,
+      "description": "Unified biomedical access — ClinicalTrials, PubMed, genes, variants, drugs, diseases, pathways",
+      "install": "pip install biomcp-cli",
+      "verify": "biomcp --version && biomcp health --apis-only",
+      "docs": "https://biomcp.org",
+      "api_keys_required": false,
+      "zed_config": {
+        "command": "biomcp",
+        "args": ["serve"],
+        "env": {}
+      }
+    },
+
+    "pubmed": {
+      "enabled": false,
+      "description": "PubMed — 36M+ citations, MeSH search, full text via PMC, citations/references",
+      "install": "git clone https://github.com/Augmented-Nature/PubMed-MCP-Server ~/.mcp-servers/pubmed && cd ~/.mcp-servers/pubmed && npm install && npm run build",
+      "api_keys_required": false,
+      "api_keys_optional": ["NCBI_API_KEY"],
+      "zed_config": {
+        "command": "node",
+        "args": ["~/.mcp-servers/pubmed/build/index.js"],
+        "env": { "NCBI_API_KEY": "${NCBI_API_KEY}" }
+      }
+    },
+
+    "uniprot": {
+      "enabled": false,
+      "description": "UniProt — protein sequences, domains, variants, pathways, interactions, 3D structures (PDB)",
+      "install": "git clone https://github.com/augmented-nature/uniprot-mcp-server ~/.mcp-servers/uniprot && cd ~/.mcp-servers/uniprot && npm install && npm run build",
+      "api_keys_required": false,
+      "zed_config": {
+        "command": "node",
+        "args": ["~/.mcp-servers/uniprot/build/index.js"],
+        "env": {}
+      }
+    },
+
+    "chembl": {
+      "enabled": false,
+      "description": "ChEMBL — drug discovery, bioactivity assays, ADMET properties, mechanisms of action, similarity search",
+      "install": "git clone https://github.com/augmented-nature/chembl-mcp-server ~/.mcp-servers/chembl && cd ~/.mcp-servers/chembl && npm install && npm run build",
+      "api_keys_required": false,
+      "zed_config": {
+        "command": "node",
+        "args": ["~/.mcp-servers/chembl/build/index.js"],
+        "env": {}
+      }
+    },
+
+    "ncbi": {
+      "enabled": false,
+      "description": "NCBI Datasets — genomes, genes, taxonomy, sequences (31 tools)",
+      "install": "git clone https://github.com/Augmented-Nature/NCBI-Datasets-MCP-Server ~/.mcp-servers/ncbi && cd ~/.mcp-servers/ncbi && npm install && npm run build",
+      "api_keys_optional": ["NCBI_API_KEY"],
+      "zed_config": {
+        "command": "node",
+        "args": ["~/.mcp-servers/ncbi/build/index.js"],
+        "env": { "NCBI_API_KEY": "${NCBI_API_KEY}" }
+      }
+    },
+
+    "biothings": {
+      "enabled": false,
+      "description": "BioThings.io — MyGene (22M+ genes across 22K species) + MyVariant (400M+ human variants)",
+      "install": "git clone https://github.com/Augmented-Nature/BioThings-MCP-Server ~/.mcp-servers/biothings && cd ~/.mcp-servers/biothings && npm install && npm run build",
+      "api_keys_required": false,
+      "zed_config": {
+        "command": "node",
+        "args": ["~/.mcp-servers/biothings/build/index.js"],
+        "env": {}
+      }
+    },
+
+    "bioontology": {
+      "enabled": false,
+      "description": "BioOntology / BioPortal — 1,200+ biological ontologies, term search, text annotation, ontology recommendations",
+      "install": "git clone https://github.com/augmented-nature/bioontology-mcp-server ~/.mcp-servers/bioontology && cd ~/.mcp-servers/bioontology && npm install && npm run build",
+      "api_keys_required": true,
+      "api_key_name": "BIOONTOLOGY_API_KEY",
+      "api_key_url": "https://bioportal.bioontology.org/accounts/new",
+      "zed_config": {
+        "command": "node",
+        "args": ["~/.mcp-servers/bioontology/build/index.js"],
+        "env": { "BIOONTOLOGY_API_KEY": "${BIOPORTAL_API_KEY}" }
+      }
+    }
+
+  },
+
+  "infrastructure": {
+
+    "qdrant": {
+      "enabled": false,
+      "description": "Qdrant vector database — semantic memory, embedding search, RAG retrieval",
+      "install": "pip install uv  (uvx handles the rest automatically)",
+      "local_mode_note": "No Docker needed — set QDRANT_LOCAL_PATH for fully local file-based mode",
+      "zed_config": {
+        "command": "uvx",
+        "args": ["mcp-server-qdrant"],
+        "env": {
+          "QDRANT_LOCAL_PATH": "~/.local/share/qdrant",
+          "COLLECTION_NAME": "research",
+          "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2",
+          "EMBEDDING_PROVIDER": "fastembed"
+        }
+      }
+    },
+
+    "neo4j": {
+      "enabled": false,
+      "description": "Neo4j graph database — knowledge graph storage, Cypher queries, schema exploration",
+      "install": "Download binary from https://github.com/neo4j/mcp/releases and place in PATH",
+      "database_install": "Docker: docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/yourpassword -e NEO4J_PLUGINS='[\"apoc\"]' neo4j",
+      "zed_config": {
+        "command": "neo4j-mcp",
+        "args": [],
+        "env": {
+          "NEO4J_URI": "${NEO4J_URI}",
+          "NEO4J_USERNAME": "${NEO4J_USERNAME}",
+          "NEO4J_PASSWORD": "${NEO4J_PASSWORD}"
+        }
+      }
+    },
+
+    "memory": {
+      "enabled": false,
+      "description": "Persistent knowledge graph memory — entities, relations and observations that survive across agent sessions",
+      "install": "npx handles automatically (requires Node.js)",
+      "zed_config": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-memory"],
+        "env": {}
+      }
+    },
+
+    "filesystem": {
+      "enabled": false,
+      "description": "Local filesystem access — lets agents read and write research files directly",
+      "install": "npx handles automatically",
+      "zed_config": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/mvz-axo/Clones"],
+        "env": {}
+      }
+    },
+
+    "github": {
+      "enabled": true,
+      "description": "GitHub integration — repos, issues, PRs, code search",
+      "install": "Already active via Zed mcp-server-github extension",
+      "zed_config": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-github"],
+        "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
+      }
+    },
+
+    "sequential_thinking": {
+      "enabled": true,
+      "description": "Structured multi-step reasoning for complex research problems",
+      "install": "Already active via Zed mcp-server-sequential-thinking extension"
+    }
+
+  }
+}

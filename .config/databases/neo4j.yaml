@@ -1,0 +1,41 @@
+# Neo4j Graph Database — ClinTrials Research
+# Docs: https://neo4j.com/docs/
+#
+# Install options:
+#   Desktop app: https://neo4j.com/download/
+#   Docker:      docker run -p 7474:7474 -p 7687:7687 \
+#                  -e NEO4J_AUTH=neo4j/yourpassword \
+#                  -e NEO4J_PLUGINS='["apoc"]' neo4j
+
+connection:
+  uri: bolt://localhost:7687
+  username: neo4j
+  password:                     # Set in .env as NEO4J_PASSWORD
+  database: neo4j
+
+# ── Core node types (domain-specific additions in GRAPH_SCHEMA.md) ──
+node_labels:
+  - Paper
+  - Gene
+  - Protein
+  - Drug
+  - Disease
+  - Pathway
+  - Trial
+  - Researcher
+  - Institution
+  - Concept
+  - Ontology_Term
+
+# ── Core relationship types ─────────────────────────────────────────
+relationship_types:
+  - CITES            # Paper → Paper
+  - TARGETS          # Drug → Protein
+  - TREATS           # Drug → Disease
+  - CAUSES           # Gene/Variant → Disease
+  - PART_OF          # Gene → Pathway
+  - ASSOCIATED_WITH  # Gene ↔ Disease (GWAS, etc.)
+  - PUBLISHED_BY     # Paper → Researcher/Institution
+  - CONDUCTED_BY     # Trial → Institution
+  - RELATED_TO       # Concept ↔ Concept
+  - ANNOTATED_AS     # Paper/Gene/Drug → Ontology_Term
