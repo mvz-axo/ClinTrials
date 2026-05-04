@@ -158,26 +158,39 @@ GITIGNORE
 # ================================================================
 #  $TITLE — Environment Variables
 #  cp .env.example .env  →  fill in values  →  never commit .env
+#
+#  LLM Policy: Anthropic (Claude) + open-weight models only.
+#  Open-weight models run locally via Ollama (already installed).
 # ================================================================
 
 # ── Biomedical APIs ─────────────────────────────────────────
-NCBI_API_KEY=            # https://www.ncbi.nlm.nih.gov/account
-BIOPORTAL_API_KEY=       # https://bioportal.bioontology.org/accounts/new
+NCBI_API_KEY=            # https://www.ncbi.nlm.nih.gov/account  (free, optional — raises rate limits)
+BIOPORTAL_API_KEY=       # https://bioportal.bioontology.org/accounts/new  (free, REQUIRED for BioOntology MCP)
+
+# ── LLM — Anthropic (primary reasoning model) ───────────────
+ANTHROPIC_API_KEY=       # https://console.anthropic.com
+
+# ── LLM — Open-weight via Ollama (local, no API key needed) ─
+OLLAMA_BASE_URL=http://localhost:11434   # Ollama is already installed
+# Pull models with:  ollama pull <model_name>
+# Medical:   ollama pull meditron:70b  |  ollama pull medllama2
+# General:   ollama pull qwen2.5:14b  |  ollama pull glm4
+# Embedding: ollama pull nomic-embed-text  |  ollama pull mxbai-embed-large
+
+# ── LLM — HuggingFace (for gated models e.g. MedGemma) ─────
+HUGGINGFACE_TOKEN=       # https://huggingface.co/settings/tokens
+# MedGemma requires: accept license at https://huggingface.co/google/medgemma-4b-it
 
 # ── Vector Database (Qdrant) ────────────────────────────────
 QDRANT_URL=http://localhost:6333
 QDRANT_API_KEY=
-# Alternative to QDRANT_URL for fully local mode (no Docker):
+# Fully local mode (no Docker needed) — uses file storage:
 QDRANT_LOCAL_PATH=\$HOME/.local/share/qdrant/$REPO
 
 # ── Graph Database (Neo4j) ──────────────────────────────────
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USERNAME=neo4j
 NEO4J_PASSWORD=
-
-# ── LLM Providers ───────────────────────────────────────────
-ANTHROPIC_API_KEY=       # https://console.anthropic.com
-OPENAI_API_KEY=          # https://platform.openai.com (embeddings)
 
 # ── GitHub ──────────────────────────────────────────────────
 GITHUB_TOKEN=            # https://github.com/settings/tokens
@@ -663,54 +676,242 @@ MCPREG
   write_file "$R/.config/llm/model_registry.json"
   cat > "$R/.config/llm/model_registry.json" << 'MODELS'
 {
-  "_readme": "Available models and their recommended research use cases",
+  "_policy": "Anthropic Claude (primary reasoning via Zed) + open-weight models via Ollama. No closed proprietary models outside Anthropic.",
+  "_ollama_installed": true,
+  "_ollama_url": "http://localhost:11434",
 
-  "reasoning_models": {
+  "primary_reasoning": {
+
     "claude-sonnet-4-6": {
-      "provider": "zed.dev",
+      "provider": "zed.dev (Anthropic)",
       "context_window": 200000,
       "supports_extended_thinking": true,
-      "best_for": ["hypothesis generation", "literature synthesis", "complex analysis", "experimental design", "scientific writing"],
-      "zed_setting": {
-        "provider": "zed.dev",
-        "model": "claude-sonnet-4-6",
-        "effort": "high",
-        "enable_thinking": true
-      }
+      "weights": "closed — Anthropic exception allowed",
+      "best_for": ["deep hypothesis generation", "literature synthesis", "complex multi-step analysis", "experimental design", "scientific writing"],
+      "use_profile": "deep_reasoning.json",
+      "zed_setting": { "provider": "zed.dev", "model": "claude-sonnet-4-6", "effort": "high", "enable_thinking": true }
     },
+
     "claude-haiku": {
-      "provider": "zed.dev",
-      "best_for": ["quick lookups", "simple formatting", "batch summarization"],
-      "zed_setting": {
-        "provider": "zed.dev",
-        "model": "claude-haiku",
-        "effort": "low",
-        "enable_thinking": false
-      }
+      "provider": "zed.dev (Anthropic)",
+      "weights": "closed — Anthropic exception allowed",
+      "best_for": ["quick lookups", "simple formatting", "rapid iteration"],
+      "zed_setting": { "provider": "zed.dev", "model": "claude-haiku", "effort": "low", "enable_thinking": false }
     }
+
+  },
+
+  "open_general": {
+    "_note": "All run locally via Ollama. No API key required. Pull with: ollama pull <model>",
+
+    "qwen2.5:14b": {
+      "developer": "Alibaba Cloud",
+      "license": "Apache 2.0",
+      "params": "14B",
+      "context": "128K",
+      "ollama_pull": "ollama pull qwen2.5:14b",
+      "size_on_disk": "~9GB",
+      "best_for": ["literature analysis", "structured data", "multilingual research", "JSON output", "biomedical QA"],
+      "notes": "Strong science and medical reasoning. Good balance of capability vs size for local use."
+    },
+
+    "qwen2.5:32b": {
+      "developer": "Alibaba Cloud",
+      "license": "Apache 2.0",
+      "params": "32B",
+      "context": "128K",
+      "ollama_pull": "ollama pull qwen2.5:32b",
+      "size_on_disk": "~20GB",
+      "best_for": ["complex reasoning", "long document analysis", "agent tasks"],
+      "notes": "Best Qwen size for serious research tasks if you have the RAM."
+    },
+
+    "qwen2.5:72b": {
+      "developer": "Alibaba Cloud",
+      "license": "Qwen License (open, non-commercial restriction on 72B)",
+      "params": "72B",
+      "context": "128K",
+      "ollama_pull": "ollama pull qwen2.5:72b",
+      "size_on_disk": "~47GB",
+      "best_for": ["highest quality local reasoning", "frontier-level biomedical analysis"],
+      "notes": "Requires substantial RAM. Check Qwen License for 72B non-commercial use."
+    },
+
+    "glm4:9b": {
+      "developer": "Zhipu AI (Tsinghua University)",
+      "license": "Apache 2.0",
+      "params": "9B",
+      "context": "128K",
+      "ollama_pull": "ollama pull glm4",
+      "size_on_disk": "~6GB",
+      "best_for": ["multilingual biomedical text", "Chinese-language literature", "mixed-language research"],
+      "notes": "Architecturally bilingual (Chinese+English). Excellent for international research literature."
+    },
+
+    "kimi-k2.5": {
+      "developer": "Moonshot AI",
+      "license": "Open weights",
+      "ollama_pull": "ollama pull kimi-k2.5",
+      "best_for": ["long context reasoning", "document analysis"],
+      "notes": "Available in Ollama library. Strong long-context performance."
+    },
+
+    "phi4:14b": {
+      "developer": "Microsoft",
+      "license": "MIT",
+      "params": "14B",
+      "ollama_pull": "ollama pull phi4",
+      "size_on_disk": "~9GB",
+      "best_for": ["reasoning", "STEM tasks", "fast local inference"],
+      "notes": "Strong on reasoning benchmarks. MIT license — very permissive."
+    },
+
+    "deepseek-v3": {
+      "developer": "DeepSeek AI",
+      "license": "MIT",
+      "ollama_pull": "ollama pull deepseek-v3",
+      "best_for": ["complex reasoning", "code", "scientific analysis"],
+      "notes": "MoE architecture — very capable. MIT licensed."
+    }
+
+  },
+
+  "open_medical": {
+    "_note": "Biomedical and clinical domain fine-tuned open-weight models",
+
+    "meditron:70b": {
+      "developer": "EPFL",
+      "license": "Llama 2 Community License",
+      "params": "70B",
+      "base_model": "Llama 2",
+      "ollama_pull": "ollama pull meditron:70b",
+      "size_on_disk": "~39GB",
+      "training_data": "PubMed Central, medical guidelines",
+      "benchmarks": "Outperforms GPT-3.5 on MedQA, within 5% of GPT-4",
+      "best_for": ["medical QA", "clinical guidelines", "differential diagnosis", "evidence-based reasoning"],
+      "notes": "Gold standard open medical LLM. Requires substantial RAM for 70B."
+    },
+
+    "meditron:7b": {
+      "developer": "EPFL",
+      "license": "Llama 2 Community License",
+      "params": "7B",
+      "ollama_pull": "ollama pull meditron:7b",
+      "size_on_disk": "~3.8GB",
+      "best_for": ["fast medical QA", "low-resource environments", "batch processing"],
+      "notes": "Smaller, faster. Good for rapid literature screening."
+    },
+
+    "llama3-meditron:70b": {
+      "developer": "EPFL (updated)",
+      "license": "Llama 3 Community License",
+      "params": "70B",
+      "base_model": "Llama 3.1",
+      "huggingface": "epfl-llm/meditron-llama3-70b",
+      "ollama_pull": "Import from HuggingFace (see HF import docs)",
+      "training_data": "PubMed Central, textbooks, clinical practice guidelines",
+      "benchmarks": "Outperforms all Llama 3.1 models on MedMCQA/MedQA/PubMedQA",
+      "best_for": ["state-of-the-art open medical reasoning", "physician-level QA"],
+      "notes": "Best open medical model available. Co-designed with physicians. Import via HF."
+    },
+
+    "medgemma:4b": {
+      "developer": "Google",
+      "license": "Health AI Developer Foundations License (open weights, research use)",
+      "params": "4B",
+      "base_model": "Gemma 3",
+      "huggingface": "google/medgemma-4b-it",
+      "multimodal": true,
+      "modalities": ["text", "medical images", "radiology", "histopathology", "ophthalmology"],
+      "ollama_pull": "ollama pull medgemma  (or import from HuggingFace)",
+      "hf_access": "Gated — accept license at huggingface.co/google/medgemma-4b-it",
+      "best_for": ["medical image analysis", "radiology report generation", "histopathology", "multimodal biomedical tasks"],
+      "notes": "Unique multimodal capability — can analyse medical images. HUGGINGFACE_TOKEN required."
+    },
+
+    "medgemma:27b": {
+      "developer": "Google",
+      "license": "Health AI Developer Foundations License",
+      "params": "27B",
+      "modalities": ["text"],
+      "huggingface": "google/medgemma-27b-text-it",
+      "hf_access": "Gated — accept license at HuggingFace",
+      "best_for": ["deep medical text reasoning", "clinical document understanding", "EHR interpretation"],
+      "notes": "Text-only. Best performance for medical text tasks among the MedGemma family."
+    },
+
+    "biomistral:7b": {
+      "developer": "LIA / Nantes University (ACL 2024)",
+      "license": "Apache 2.0",
+      "params": "7B",
+      "base_model": "Mistral 7B",
+      "huggingface": "BioMistral/BioMistral-7B",
+      "training_data": "PubMed Central full text",
+      "ollama_pull": "Import from HuggingFace",
+      "best_for": ["biomedical literature QA", "multilingual medical text", "PubMed-grounded reasoning"],
+      "notes": "Pre-trained on PubMed Central. Evaluated on 10 medical QA benchmarks."
+    },
+
+    "mediphi-clinical": {
+      "developer": "Microsoft",
+      "license": "MIT",
+      "base_model": "Phi-3.5-mini-instruct",
+      "huggingface": "microsoft/MediPhi-Clinical",
+      "training_data": "Clinical notes, PMC-Patients, NoteChat",
+      "best_for": ["clinical note understanding", "EHR extraction", "lightweight clinical reasoning"],
+      "notes": "MIT licensed. Very small footprint. Good for structured data extraction from clinical text."
+    }
+
   },
 
   "embedding_models": {
+    "_note": "All open-weight. Run locally via Ollama or sentence-transformers. No API key required.",
+
+    "nomic-embed-text": {
+      "provider": "Ollama (Nomic AI)",
+      "license": "Apache 2.0",
+      "dimensions": 768,
+      "ollama_pull": "ollama pull nomic-embed-text",
+      "context": "8192 tokens",
+      "best_for": ["general literature search", "production RAG", "long documents"],
+      "notes": "Excellent quality, long context window, fast. Recommended default."
+    },
+
+    "mxbai-embed-large": {
+      "provider": "Ollama (mixedbread.ai)",
+      "license": "Apache 2.0",
+      "dimensions": 1024,
+      "ollama_pull": "ollama pull mxbai-embed-large",
+      "best_for": ["highest quality semantic search", "scientific literature"],
+      "notes": "State-of-the-art on MTEB benchmark. Best quality among free local models."
+    },
+
+    "bge-m3": {
+      "provider": "Ollama (BAAI)",
+      "license": "MIT",
+      "dimensions": 1024,
+      "ollama_pull": "ollama pull bge-m3",
+      "best_for": ["multilingual biomedical search", "cross-lingual literature"],
+      "notes": "Multi-lingual, multi-granularity. Excellent for international literature."
+    },
+
+    "qwen3-embedding": {
+      "provider": "Ollama (Alibaba)",
+      "license": "Apache 2.0",
+      "ollama_pull": "ollama pull qwen3-embedding",
+      "best_for": ["multilingual scientific text", "long biomedical documents"],
+      "notes": "New Qwen3 embedding — strong multilingual scientific performance."
+    },
+
     "all-MiniLM-L6-v2": {
-      "provider": "sentence-transformers (local — no API key)",
+      "provider": "sentence-transformers / Qdrant fastembed (local)",
+      "license": "Apache 2.0",
       "dimensions": 384,
-      "install": "pip install sentence-transformers",
-      "best_for": ["offline use", "Qdrant fastembed", "development"],
-      "qdrant_provider": "fastembed"
-    },
-    "text-embedding-3-large": {
-      "provider": "openai",
-      "dimensions": 3072,
-      "install": "pip install openai",
-      "best_for": ["production literature search", "highest quality semantic retrieval"],
-      "cost": "~$0.13 per 1M tokens"
-    },
-    "text-embedding-3-small": {
-      "provider": "openai",
-      "dimensions": 1536,
-      "best_for": ["code embeddings", "cost-efficient production"],
-      "cost": "~$0.02 per 1M tokens"
+      "install": "Built into mcp-server-qdrant via fastembed — no separate install needed",
+      "best_for": ["development", "fast iteration", "Qdrant default"],
+      "notes": "Fastest to get started. Lower quality than nomic/mxbai but zero friction."
     }
+
   }
 }
 MODELS
@@ -986,40 +1187,57 @@ GSCHEMA
   cat > "$R/architecture/03_knowledge/EMBEDDING_STRATEGY.md" << 'EMBSTRAT'
 # Embedding Strategy
 
+## Policy
+
+All embedding models are **open-weight, run locally via Ollama or sentence-transformers**.
+No proprietary embedding APIs are used.
+
 ## Model Selection
 
-| Use case | Model | Dimensions | Provider | API key |
+| Use case | Model | Dimensions | Pull command | Quality |
 |---|---|---|---|---|
-| Development / offline | all-MiniLM-L6-v2 | 384 | sentence-transformers | None |
-| Production literature | text-embedding-3-large | 3072 | OpenAI | ✅ |
-| Production (budget) | text-embedding-3-small | 1536 | OpenAI | ✅ |
+| Zero-friction start | all-MiniLM-L6-v2 | 384 | Built into Qdrant fastembed | Good |
+| Recommended default | nomic-embed-text | 768 | `ollama pull nomic-embed-text` | Very good |
+| Highest quality | mxbai-embed-large | 1024 | `ollama pull mxbai-embed-large` | Excellent |
+| Multilingual | bge-m3 | 1024 | `ollama pull bge-m3` | Excellent |
+| Scientific multilingual | qwen3-embedding | 2048 | `ollama pull qwen3-embedding` | Excellent |
 
 ## Chunking Strategy
 
 | Content | Chunk size | Overlap | Strategy |
 |---|---|---|---|
-| Research papers | 512 tokens | 50 | Section-aware (Abstract, Methods, Results, Discussion) |
+| Research papers | 512 tokens | 50 | Section-aware (Abstract / Methods / Results / Discussion) |
 | Book chapters | 1024 tokens | 100 | Paragraph-aware |
 | Notes & summaries | Whole document | — | No chunking |
 | Agent conversations | 256 tokens | 25 | Turn-aware |
+| Knowledge graph nodes | Whole node | — | No chunking |
 
 ## Collections (Qdrant)
 
 See `.config/databases/qdrant.yaml` for collection definitions.
+All collections use `nomic-embed-text` (768d) by default.
+Change `vector_size` if switching to a different model.
 
 ## Retrieval Pipeline
 
 1. Query embedded with same model as corpus
 2. Qdrant returns top-k by cosine similarity
-3. Results re-ranked by recency + citation count (where available)
-4. Top results passed to LLM as RAG context
-5. LLM cites chunk sources in response
+3. Results re-ranked by recency + citation count where available
+4. Top results passed to Claude as RAG context
+5. Claude cites chunk sources in response
 
-## Recommended starting point
+## Quickstart
 
-Use **all-MiniLM-L6-v2 via fastembed** (built into mcp-server-qdrant) — no API key,
-runs locally, good quality for development. Upgrade to text-embedding-3-large
-when building production literature corpora.
+```bash
+# Pull the recommended default embedding model
+ollama pull nomic-embed-text
+
+# Test it
+curl http://localhost:11434/api/embed -d \'{
+  "model": "nomic-embed-text",
+  "input": "monoclonal antibody epitope binding"
+}\'
+```
 EMBSTRAT
 
   write_file "$R/architecture/04_agents/AGENT_FRAMEWORK.md"
@@ -1161,47 +1379,77 @@ COLLAB
   cat > "$R/architecture/05_technology/TOOL_REGISTRY.md" << 'TOOLS'
 # Tool Registry
 
-## MCP Servers
+## MCP Server Access Requirements
 
 Full configs in `.config/mcp/mcp_registry.json`
 
-| Server | Purpose | Status | Install |
+| Server | Access Required | Install method | Status |
 |---|---|---|---|
-| **BioMCP** | Trials, PubMed, genes, variants, drugs | 🔲 Install needed | `pip install biomcp-cli` |
-| **PubMed MCP** | 36M+ citations, full text, MeSH | 🔲 Install needed | npm (Augmented Nature) |
-| **UniProt MCP** | Proteins, structures, pathways | 🔲 Install needed | npm (Augmented Nature) |
-| **ChEMBL MCP** | Drug bioactivity, ADMET | 🔲 Install needed | npm (Augmented Nature) |
-| **NCBI MCP** | Genomes, sequences, taxonomy | 🔲 Install needed | npm (Augmented Nature) |
-| **BioThings MCP** | 22M genes + 400M variants | 🔲 Install needed | npm (Augmented Nature) |
-| **BioOntology MCP** | 1,200+ ontologies (needs API key) | 🔲 Install needed | npm (Augmented Nature) |
-| **Qdrant MCP** | Vector search, semantic memory | 🔲 Install needed | `pip install uv` |
-| **Neo4j MCP** | Knowledge graphs, Cypher | 🔲 Install needed | Binary from GitHub |
-| **Memory MCP** | Persistent agent memory | 🔲 Install needed | npx (auto) |
-| **GitHub MCP** | Repo, issues, code search | ✅ Active | Zed extension |
-| **Sequential Thinking** | Structured reasoning | ✅ Active | Zed extension |
-| **Filesystem MCP** | Local file read/write | 🔲 Install needed | npx (auto) |
+| **BioMCP** | None | `uv tool install biomcp-cli` | 🔲 Install needed |
+| **PubMed MCP** | Optional: NCBI_API_KEY | npm (Augmented Nature) | 🔲 Install needed |
+| **UniProt MCP** | None | npm (Augmented Nature) | 🔲 Install needed |
+| **ChEMBL MCP** | None | npm (Augmented Nature) | 🔲 Install needed |
+| **NCBI Datasets MCP** | Optional: NCBI_API_KEY | npm (Augmented Nature) | 🔲 Install needed |
+| **BioThings MCP** | None | npm (Augmented Nature) | 🔲 Install needed |
+| **BioOntology MCP** | **Required: BIOPORTAL_API_KEY** | npm (Augmented Nature) | 🔲 Install needed |
+| **Qdrant MCP** | None (local file mode) | uv already installed ✅ | 🔲 Configure |
+| **Neo4j MCP** | Neo4j DB running | Binary from GitHub | 🔲 Install needed |
+| **Memory MCP** | None | npx (auto, Node.js ✅) | 🔲 Configure |
+| **Filesystem MCP** | None | npx (auto, Node.js ✅) | 🔲 Configure |
+| **GitHub MCP** | GITHUB_TOKEN | Zed extension ✅ | ✅ Active |
+| **Sequential Thinking** | None | Zed extension ✅ | ✅ Active |
 
-## Python Packages (install as needed)
+## Free API Keys to Register (takes 2 min each)
+
+| Service | URL | Why |
+|---|---|---|
+| NCBI | https://www.ncbi.nlm.nih.gov/account | 10x higher rate limits for BioMCP + NCBI MCP |
+| BioPortal | https://bioportal.bioontology.org/accounts/new | **Required** for BioOntology MCP |
+| HuggingFace | https://huggingface.co/settings/tokens | Required for gated models (MedGemma) |
+
+## Python/uv Packages
 
 ```bash
-pip install biomcp-cli              # BioMCP CLI
-pip install qdrant-client           # Qdrant Python client
-pip install sentence-transformers   # Local embeddings
-pip install biopython               # Bioinformatics utilities
-pip install pandas numpy scipy      # Data analysis
-pip install matplotlib plotly       # Visualisation
-pip install py2neo                  # Neo4j Python client
-pip install requests httpx          # API access
-pip install jupyter                 # Notebooks
-pip install openai                  # OpenAI embeddings (optional)
+# Use uv (already installed) instead of pip
+uv tool install biomcp-cli          # BioMCP CLI
+uv pip install qdrant-client        # Qdrant Python client
+uv pip install sentence-transformers # Fallback local embeddings
+uv pip install biopython            # Bioinformatics utilities
+uv pip install pandas numpy scipy   # Data analysis
+uv pip install matplotlib plotly    # Visualisation
+uv pip install py2neo               # Neo4j Python client
+uv pip install requests httpx       # API access
+uv pip install jupyter              # Notebooks
+uv pip install ollama               # Ollama Python client
+```
+
+## Open-Weight LLMs (via Ollama — already installed)
+
+```bash
+# Medical models
+ollama pull meditron:7b             # Immediate, 3.8GB — fast medical QA
+ollama pull meditron:70b            # 39GB — best open medical reasoning
+ollama pull medgemma                # MedGemma 4B — multimodal (needs HF token)
+
+# General open-weight models
+ollama pull qwen2.5:14b             # 9GB — strong science/biomedical reasoning
+ollama pull qwen2.5:32b             # 20GB — deeper reasoning
+ollama pull glm4                    # 6GB — bilingual, 128K context
+ollama pull phi4                    # 9GB — strong reasoning, MIT license
+ollama pull kimi-k2.5               # Long context specialist
+
+# Embedding models (pick one to start)
+ollama pull nomic-embed-text        # ← recommended default
+ollama pull mxbai-embed-large       # Higher quality
+ollama pull bge-m3                  # Best multilingual
 ```
 
 ## Zed Extensions (installed)
 
 | Extension | Purpose |
 |---|---|
-| Cline | AI coding agent with full file access |
-| Kilocode | AI coding agent |
+| Cline 2.18.0 | AI coding agent with full file access |
+| Kilocode 7.2.34 | AI coding agent |
 | dockerfile | Docker file support |
 TOOLS
 
@@ -1263,37 +1511,74 @@ MCPARCH
 
 ## Current Setup
 
-| Component | Technology | Location | Status |
+| Component | Technology | Version | Status |
 |---|---|---|---|
-| Editor | Zed 1.0.1 | Local | ✅ Running |
-| Version control | Git + GitHub | Local + cloud | ✅ Active |
-| AI agents | Cline 2.18.0, Kilocode 7.2.34 | Local (Zed) | ✅ Active |
-| LLM | Claude Sonnet 4.6 via zed.dev | Cloud | ✅ Active |
-| Vector DB | Qdrant (local file mode) | Local | 🔲 To install |
-| Graph DB | Neo4j | Local | 🔲 To install |
-| Biomedical MCP | BioMCP | Local | 🔲 To install |
+| Editor | Zed | 1.0.1 | ✅ Running |
+| Version control | Git + GitHub | — | ✅ Active |
+| AI agents | Cline + Kilocode | 2.18 / 7.2.34 | ✅ Active |
+| Primary LLM | Claude Sonnet 4.6 via zed.dev | — | ✅ Active |
+| Local LLM runtime | Ollama | 0.23.0 | ✅ Installed |
+| Python runtime | Python | 3.13.7 | ✅ Installed |
+| Package manager | uv | 0.11.8 | ✅ Installed |
+| Node.js | Node.js + npm | 20.19.4 / 9.2.0 | ✅ Installed |
+| Vector DB | Qdrant (local file mode) | — | 🔲 Configure |
+| Graph DB | Neo4j | — | 🔲 To install |
+| Biomedical MCP | BioMCP | — | 🔲 To install |
+
+## LLM Policy
+
+- **Anthropic Claude** — primary reasoning model (via Zed cloud API)
+- **Open-weight models via Ollama** — medical specialised + general capability
+- **No other closed proprietary models** — no OpenAI, no Gemini API, no Cohere
 
 ## Installation Priorities
 
-1. **BioMCP** — enables immediate literature + trial search
-   `pip install biomcp-cli`
+### Step 1 — BioMCP (5 min, no keys needed)
+```bash
+uv tool install biomcp-cli
+biomcp --version
+biomcp health --apis-only
+```
 
-2. **Qdrant (local mode)** — enables semantic search without Docker
-   `pip install uv`  (mcp-server-qdrant handles the rest)
+### Step 2 — First local medical model (5 min)
+```bash
+ollama pull meditron:7b             # 3.8GB — immediate medical QA capability
+ollama pull nomic-embed-text        # Default embedding model
+```
 
-3. **Augmented Nature MCP servers** — PubMed, UniProt, ChEMBL
-   Install via npm — see `.config/mcp/mcp_registry.json`
+### Step 3 — Get free API keys (5 min)
+- NCBI: https://www.ncbi.nlm.nih.gov/account
+- BioPortal: https://bioportal.bioontology.org/accounts/new
+- HuggingFace: https://huggingface.co/settings/tokens (for MedGemma)
 
-4. **Neo4j** — enables knowledge graph (Docker recommended)
-   `docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/password neo4j`
+### Step 4 — Augmented Nature MCP servers (npm, Node.js already installed)
+```bash
+git clone https://github.com/Augmented-Nature/PubMed-MCP-Server ~/.mcp-servers/pubmed
+cd ~/.mcp-servers/pubmed && npm install && npm run build
+# Repeat for uniprot, chembl, ncbi, biothings, bioontology
+# See .config/mcp/mcp_registry.json for all install commands
+```
 
-5. **API Keys** — register for NCBI and BioPortal (both free)
+### Step 5 — Qdrant (already have uv, no Docker needed)
+```bash
+# mcp-server-qdrant via uvx handles this automatically
+# Just add to Zed settings.json — see MCP_ARCHITECTURE.md
+```
+
+### Step 6 — Neo4j (when ready for knowledge graphs)
+```bash
+docker run -d --name neo4j \
+  -p 7474:7474 -p 7687:7687 \
+  -e NEO4J_AUTH=neo4j/yourpassword \
+  -e NEO4J_PLUGINS='["apoc"]' neo4j
+```
 
 ## Compute Notes
 
-- All inference runs via Zed's cloud API (no local GPU needed)
-- Local embeddings (all-MiniLM-L6-v2) run on CPU — fast enough for development
-- Qdrant runs locally with no server process in file mode
+- Claude runs via Zed cloud — no local GPU required for primary reasoning
+- Ollama runs open-weight models on CPU (slow but functional) or GPU (fast)
+- Qdrant in local file mode — no server process, no Docker, zero overhead
+- All npm MCP servers are already supported (Node.js 20 installed)
 INFRA
 
   log_done "Common scaffold complete: $REPO"
