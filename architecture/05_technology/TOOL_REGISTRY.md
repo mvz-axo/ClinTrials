@@ -1,74 +1,115 @@
-# Tool Registry
+# Tool Registry — mvz-axo Research Platform
 
-## MCP Server Access Requirements
+Full MCP server configuration in `.config/mcp/mcp_registry.json`.
+Platform architecture: `architecture/00_platform/MCP_LAYER.md`.
 
-Full configs in `.config/mcp/mcp_registry.json`
+## MCP Servers — Status Overview
 
-| Server | Access Required | Install method | Status |
-|---|---|---|---|
-| **BioMCP** | None | `uv tool install biomcp-cli` | 🔲 Install needed |
-| **PubMed MCP** | Optional: NCBI_API_KEY | npm (Augmented Nature) | 🔲 Install needed |
-| **UniProt MCP** | None | npm (Augmented Nature) | 🔲 Install needed |
-| **ChEMBL MCP** | None | npm (Augmented Nature) | 🔲 Install needed |
-| **NCBI Datasets MCP** | Optional: NCBI_API_KEY | npm (Augmented Nature) | 🔲 Install needed |
-| **BioThings MCP** | None | npm (Augmented Nature) | 🔲 Install needed |
-| **BioOntology MCP** | **Required: BIOPORTAL_API_KEY** | npm (Augmented Nature) | 🔲 Install needed |
-| **Qdrant MCP** | None (local file mode) | uv already installed ✅ | 🔲 Configure |
-| **Neo4j MCP** | Neo4j DB running | Binary from GitHub | 🔲 Install needed |
-| **Memory MCP** | None | npx (auto, Node.js ✅) | 🔲 Configure |
-| **Filesystem MCP** | None | npx (auto, Node.js ✅) | 🔲 Configure |
-| **GitHub MCP** | GITHUB_TOKEN | Zed extension ✅ | ✅ Active |
-| **Sequential Thinking** | None | Zed extension ✅ | ✅ Active |
+### ✅ Active (no further action needed)
 
-## Free API Keys to Register (takes 2 min each)
+| Server | What it does | Key |
+|--------|-------------|-----|
+| **BioMCP** | ClinicalTrials, PubMed, genes, variants, drugs, diseases, pathways (30+ tools) | None |
+| **arsenal-mcp-embedding** | PDF/MD → chunk → embed → Qdrant; semantic search (7 tools) | Uses QDRANT_URL + OLLAMA_BASE_URL |
+| **arsenal-mcp-rss-reader** | RSS/Atom/JSON feed reader, folder management (19 tools) | None |
+| **arsenal-mcp-logseq** | Logseq knowledge graph CRUD — pages, blocks, backlinks (8 tools) | None |
+| **GitHub MCP** | Repos, issues, PRs, code search | GITHUB_TOKEN |
+| **Sequential Thinking** | Structured multi-step reasoning | None |
 
-| Service | URL | Why |
-|---|---|---|
-| NCBI | https://www.ncbi.nlm.nih.gov/account | 10x higher rate limits for BioMCP + NCBI MCP |
-| BioPortal | https://bioportal.bioontology.org/accounts/new | **Required** for BioOntology MCP |
-| HuggingFace | https://huggingface.co/settings/tokens | Required for gated models (MedGemma) |
-
-## Python/uv Packages
+### 🔲 Install needed (npm — Node.js already installed)
 
 ```bash
-# Use uv (already installed) instead of pip
-uv tool install biomcp-cli          # BioMCP CLI
-uv pip install qdrant-client        # Qdrant Python client
-uv pip install sentence-transformers # Fallback local embeddings
-uv pip install biopython            # Bioinformatics utilities
-uv pip install pandas numpy scipy   # Data analysis
-uv pip install matplotlib plotly    # Visualisation
-uv pip install py2neo               # Neo4j Python client
-uv pip install requests httpx       # API access
-uv pip install jupyter              # Notebooks
-uv pip install ollama               # Ollama Python client
+# Install all Augmented Nature biomedical MCP servers at once:
+for server in PubMed-MCP-Server UniProt-MCP-Server ChEMBL-MCP-Server \
+              NCBI-Datasets-MCP-Server BioThings-MCP-Server BioOntology-MCP-Server; do
+  repo=$(echo $server | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+  git clone https://github.com/Augmented-Nature/${server} ~/.mcp-servers/${repo}
+  cd ~/.mcp-servers/${repo} && npm install && npm run build && cd -
+done
 ```
 
-## Open-Weight LLMs (via Ollama — already installed)
+| Server | Tools | Key required | Notes |
+|--------|-------|-------------|-------|
+| **PubMed MCP** | 12 | Optional: NCBI_API_KEY | 36M+ citations, MeSH, full text |
+| **UniProt MCP** | 15 | None | Protein sequences, domains, structures |
+| **ChEMBL MCP** | 18 | None | Drug discovery, ADMET, bioactivity |
+| **NCBI Datasets MCP** | 31 | Optional: NCBI_API_KEY | Genomes, genes, taxonomy |
+| **BioThings MCP** | 10 | None | MyGene + MyVariant |
+| **BioOntology MCP** | 8 | **BIOPORTAL_API_KEY** 🔒 | 1,200+ ontologies |
+| **Brave Search MCP** | 2 | **BRAVE_API_KEY** 🔒 | Live web search for agents |
+| **Qdrant MCP** | 5 | None (local) | Via `uvx mcp-server-qdrant` |
+| **Neo4j MCP** | 10 | Neo4j running | Binary from GitHub releases |
+| **Memory MCP** | 6 | None | Via `npx @modelcontextprotocol/server-memory` |
+| **Filesystem MCP** | 8 | None | Via `npx @modelcontextprotocol/server-filesystem` |
+
+### Install Brave Search MCP
 
 ```bash
-# Medical models
-ollama pull meditron:7b             # Immediate, 3.8GB — fast medical QA
-ollama pull meditron:70b            # 39GB — best open medical reasoning
-ollama pull medgemma                # MedGemma 4B — multimodal (needs HF token)
-
-# General open-weight models
-ollama pull qwen2.5:14b             # 9GB — strong science/biomedical reasoning
-ollama pull qwen2.5:32b             # 20GB — deeper reasoning
-ollama pull glm4                    # 6GB — bilingual, 128K context
-ollama pull phi4                    # 9GB — strong reasoning, MIT license
-ollama pull kimi-k2.5               # Long context specialist
-
-# Embedding models (pick one to start)
-ollama pull nomic-embed-text        # ← recommended default
-ollama pull mxbai-embed-large       # Higher quality
-ollama pull bge-m3                  # Best multilingual
+# No pre-install needed — npx runs it on demand.
+# Add to ~/.config/zed/settings.json → context_servers:
+# "brave-search": {
+#   "command": "npx",
+#   "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+#   "env": { "BRAVE_API_KEY": "your-key" }
+# }
+# Get key (free 2,000 queries/month): https://api.search.brave.com/app/keys
 ```
 
-## Zed Extensions (installed)
+## API Keys — Acquisition Checklist
 
-| Extension | Purpose |
-|---|---|
-| Cline 2.18.0 | AI coding agent with full file access |
-| Kilocode 7.2.34 | AI coding agent |
-| dockerfile | Docker file support |
+| Key | Where | Cost | Time | Priority |
+|-----|-------|------|------|----------|
+| NCBI_API_KEY | https://www.ncbi.nlm.nih.gov/account/ | 🆓 Free | 2 min | ⭐⭐⭐ |
+| BIOPORTAL_API_KEY | https://bioportal.bioontology.org/accounts/new | 🆓 Free | 2 min | ⭐⭐⭐ |
+| ANTHROPIC_API_KEY | https://console.anthropic.com | 💳 Paid | 5 min | ⭐⭐⭐ |
+| BRAVE_API_KEY | https://api.search.brave.com/app/keys | 💳 2K free/mo | 2 min | ⭐⭐ |
+| GITHUB_TOKEN | https://github.com/settings/tokens | 🆓 Free | 2 min | ⭐⭐ |
+| HUGGINGFACE_TOKEN | https://huggingface.co/settings/tokens | 🆓 Free | 2 min | ⭐⭐ |
+| S2_API_KEY | https://www.semanticscholar.org/product/api#api-key-form | 🆓 Free | 3 min | ⭐⭐ |
+| CROSSREF_MAILTO | Email address only | 🆓 Free | 30 sec | ⭐ |
+| OPENALEX_EMAIL | Email address only | 🆓 Free | 30 sec | ⭐ |
+| OPENROUTER_API_KEY | https://openrouter.ai/keys | 💳 Paid | 3 min | Optional |
+| RUNPOD_API_KEY | https://www.runpod.io/console/user/settings | 💳 Paid | 5 min | Optional |
+| DRUGBANK_API_KEY | https://go.drugbank.com/users/sign_up | 🆓 Academic | 24–48h | Optional |
+| LENS_API_KEY | https://www.lens.org/lens/user/subscriptions | 🆓 Free | 3 min | Optional |
+
+## Open-Weight LLMs via Ollama
+
+```bash
+# Already loaded on this machine:
+# medgemma1.5, qwen3.5:9b, gemma4:26b, nomic-embed-text
+
+# Additional models to consider:
+ollama pull meditron:7b          # 3.8GB — fast medical QA
+ollama pull phi4                 # 9GB  — strong reasoning, MIT license
+ollama pull qwen2.5:14b          # 9GB  — strong science reasoning
+ollama pull mxbai-embed-large    # 670MB — higher-quality embeddings
+
+# For embedding: use ONE model consistently across all collections
+# Current platform standard: nomic-embed-text (768-dim)
+```
+
+## Unsloth Studio
+
+Local model fine-tuning and inference UI.
+- URL: http://192.168.18.47:8888 (LAN) or http://localhost:8888
+- Status: `systemctl --user status unsloth-studio`
+- Docs: https://unsloth.ai/docs
+
+Supported training: SFT, DPO, LoRA, QLoRA on Llama, Qwen, Gemma, Mistral, Phi, and more.
+Max local model size: ~13B full precision / ~70B with QLoRA on 12GB VRAM.
+
+## Kask Arsenal Binaries
+
+Pre-built Rust MCP servers from `~/Clones/kask/arsenal/`:
+
+```bash
+# Rebuild all installed arsenal servers:
+cd ~/Clones/kask && git pull
+cd arsenal
+cargo build --release \
+  -p arsenal-mcp-embedding \
+  -p arsenal-mcp-rss-reader \
+  -p arsenal-mcp-logseq
+cp target/release/arsenal-mcp-{embedding,rss-reader,logseq} ~/.local/bin/
+```

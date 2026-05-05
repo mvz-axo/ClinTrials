@@ -169,5 +169,70 @@
       "install": "Already active via Zed mcp-server-sequential-thinking extension"
     }
 
+  },
+
+  "arsenal": {
+
+    "embedding": {
+      "enabled": true,
+      "description": "PDF/MD → heading-aware chunks → Ollama embed → Qdrant. 7 tools: vectorize_document, vectorize_text, search, search_between, list_collections, collection_info, drop_collection.",
+      "binary": "~/.local/bin/arsenal-mcp-embedding",
+      "wrapper": ".config/mcp/run-embedding.sh",
+      "source": "~/Clones/kask/arsenal/crates/arsenal-mcp-embedding/",
+      "rebuild": "cd ~/Clones/kask/arsenal && cargo build --release -p arsenal-mcp-embedding",
+      "zed_config": {
+        "command": "/home/mvz-axo/Clones/ClinTrials/.config/mcp/run-embedding.sh",
+        "args": [],
+        "env": {}
+      }
+    },
+
+    "rss_reader": {
+      "enabled": true,
+      "description": "RSS/Atom/JSON Feed reader with Google Reader API model. 19 tools for subscription, folder management, unread tracking, cross-feed search.",
+      "binary": "~/.local/bin/arsenal-mcp-rss-reader",
+      "wrapper": ".config/mcp/run-rss-reader.sh",
+      "source": "~/Clones/kask/arsenal/crates/arsenal-mcp-rss-reader/",
+      "rebuild": "cd ~/Clones/kask/arsenal && cargo build --release -p arsenal-mcp-rss-reader",
+      "zed_config": {
+        "command": "/home/mvz-axo/Clones/ClinTrials/.config/mcp/run-rss-reader.sh",
+        "args": [],
+        "env": {}
+      }
+    },
+
+    "logseq": {
+      "enabled": true,
+      "description": "Logseq knowledge graph CRUD. 8 tools: get/create/update/delete page, list_pages, search, get_backlinks, get_block. Graph path: knowledge/logseq/",
+      "binary": "~/.local/bin/arsenal-mcp-logseq",
+      "wrapper": ".config/mcp/run-logseq.sh",
+      "source": "~/Clones/kask/arsenal/crates/arsenal-mcp-logseq/",
+      "rebuild": "cd ~/Clones/kask/arsenal && cargo build --release -p arsenal-mcp-logseq",
+      "zed_config": {
+        "command": "/home/mvz-axo/Clones/ClinTrials/.config/mcp/run-logseq.sh",
+        "args": [],
+        "env": {}
+      }
+    }
+
+  },
+
+  "web": {
+
+    "brave_search": {
+      "enabled": false,
+      "description": "Brave Search — privacy-respecting live web search for AI agents. 2 tools: web_search, local_search. Free tier: 2,000 queries/month.",
+      "install": "No install needed — npx runs it automatically",
+      "api_keys_required": true,
+      "api_key_name": "BRAVE_API_KEY",
+      "api_key_url": "https://api.search.brave.com/app/keys",
+      "pricing": "Free: 2,000 queries/month | Paid: $3 per 1,000 queries",
+      "zed_config": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+        "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
+      }
+    }
+
   }
 }
